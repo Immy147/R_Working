@@ -1,0 +1,135 @@
+---
+title: "K-mean"
+author: "Imran"
+date: "1/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r}
+library(tidyverse)  # use for data manipulation
+
+library(cluster)    # use for clustering algorithms
+
+library(factoextra) # clustering algorithms & visualization
+
+library("gridExtra")
+
+getOption("repos")
+```
+
+
+
+## Data pre processing
+```{r}
+read.csv("US_arrest.csv")##load data set
+df <- na.omit(df) ##it remove the empty spaces from data set
+df <- scale(df)   ##standardize the data col
+head(df) ## it shows the top 5 rows in data set
+
+```
+
+```{r}
+distance <- get_dist(df)   ## for computing a distance matrix between the rows of a data matrix. The default distance computed is the Euclidean.
+fviz_dist(distance, gradient = list(low = "#00AFBB", mid = "green", high = "#FC4E07"))
+## for visualizing a distance matrix
+```
+## clustering
+```{r}
+l1 <- kmeans(df, centers = 3, nstart = 25)  ## cluster define to be 3
+str(l1)
+```
+
+
+```{r}
+l1
+
+```
+```{r}
+fviz_cluster(l1, data = df) ## it will perform principal component analysis (PCA)
+```
+## standard scatter plot
+```{r}
+
+df %>%
+  as_tibble() %>%   ##pipeline function
+  mutate(cluster = l1$cluster,
+         state = row.names(USArrests)) %>%
+  ggplot(aes(UrbanPop, Murder, color = factor(cluster), label = state)) +
+  geom_text()
+```
+## other clusters
+```{r}
+l2 <- kmeans(df, centers = 3, nstart = 25)
+l3 <- kmeans(df, centers = 4, nstart = 25)
+l4 <- kmeans(df, centers = 5, nstart = 25)
+```
+## plots to comare different clusters
+```{r}
+p1 <- fviz_cluster(l2, geom = "point", data = df) + ggtitle("k = 3")
+p2 <- fviz_cluster(l3, geom = "point",  data = df) + ggtitle("k = 4")
+p3 <- fviz_cluster(l4, geom = "point",  data = df) + ggtitle("k = 5")
+ 
+grid.arrange(p1, p2, p3, nrow = 2)
+
+```
+```{r}
+set.seed(123)   ##saudo random no generator
+wss <- function(k) {
+  kmeans(df, k, nstart = 10 )$tot.withinss
+}
+k.values <- 1:15 ##clustering
+
+
+
+wss_values <- map_dbl(k.values, wss)  ##elbow method to find optimal no of clusters
+
+plot(k.values, wss_values,            ##plot k values against optimal option
+       type="b", pch = 19, frame = FALSE, 
+       xlab="Number of clusters K",
+       ylab="Total within-clusters sum of squares")
+
+```
+```{r}
+##compute optimal no of clusters
+set.seed(123)
+
+fviz_nbclust(df, kmeans, method = "wss")
+```
+```{r}
+# Compute k-means clustering with k = 4
+set.seed(123)
+final <- kmeans(df, 4, nstart = 25)
+print(final)
+```
+
+```{r}
+# the final cluster with k=4
+fviz_cluster(final, data = df)
+
+```
+
+```{r}
+#the final summary 
+USArrests %>%   #pioeline function
+  mutate(Cluster = final$cluster) %>%   #mutate is used to group the items
+  group_by(Cluster) %>%
+  summarise_all("mean")
+
+
+
+
+## we can extract the clusters and add to our initial data to do some descriptive statistics at the cluster level.
+```
+
+```{r}
+
+rmarkdown::render("K-means.Rmd", "pdf_document")
+```
+
