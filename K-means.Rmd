@@ -97,7 +97,7 @@ plot(k.values, wss_values,            ##plot k values against optimal option
 
 ```
 ```{r}
-##compute optimal no of clusters
+##compute optimal no of
 set.seed(123)
 
 fviz_nbclust(df, kmeans, method = "wss")
