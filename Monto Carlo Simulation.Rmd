@@ -1,0 +1,95 @@
+---
+title: "Monto Carlo Simulation"
+author: "Imran"
+date: "1/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## R Markdown
+```{r}
+x <- runif(n=1000, min = 0, max = 1)
+hist(x)
+```
+
+```{r}
+
+library(ggplot2)
+y <- rnorm(n=100, mean = 5, sd=2)
+mean(y)
+sd(y)
+par(mfrow=c(3,1))
+plot(y)
+boxplot(y)
+hist(y)
+```
+```{r}
+t1 <- rnorm(n=100, 5,2)
+t2 <- rnorm(n=100, 5,2)
+t3 <- rnorm(n=100, 5,2)
+t4 <- rnorm(n=100, 5,2)
+par(mfrow=c(2,2))
+hist(t1)
+hist(t2)
+hist(t3)
+hist(t4)
+
+mean(t1)
+mean(t2)
+mean(t3)
+mean(t4)
+
+```
+```{r}
+t5 <- replicate(n=4, rnorm(100, 5,2))
+head(t5)
+str(t5)
+
+apply(t5, 2, sd)
+summary(t5)
+
+
+```
+```{r}
+t6 <- replicate(n=4, rnorm(1000, 5,2))
+summary(t6)
+apply(t6, 2,sd)
+sd(apply(t6,2,mean))
+
+
+
+```
+```{r}
+#lets play some more interesting game, Regression !!!
+#lets we have a regression: Y -N (a+b*x, sd )
+
+par(mfrow=c(2,2))
+a=5
+b=0.7
+x <- seq(2,20)
+
+tt <- as.numeric(y_fix <- a + b*x)
+tt
+
+plot(tt~x, main="Deterministic model")
+abline(a=5,b=0.7)
+#class(y_fix)
+
+l1 <- rnorm(length(x), mean = tt, sd=2)
+plot(tt ~x)
+abline(a=5, b=0.7)
+
+y_sim <- lm(l1 ~ x)
+summary(y_sim)
+confint(y_sim)
+plot(tt ~x)+
+abline(reg=y_sim, lty=2)
+
+
+```
+
+
